@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "yolov7"
+version = "0.1.0"
+description = ""
+authors = ["tom Koren <tom.koren@tensorleap.ai>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+numpy = "^1.18.5"
+opencv-python = "^4.1.1"
+pillow = "^7.1.2"
+pyyaml = "^5.3.1"
+requests = "^2.23.0"
+scipy = "^1.4.1"
+torch = "^1.7.0"
+torchvision = "^0.8.1"
+tqdm = "^4.41.0"
+protobuf = "<4.21.3"
+onnx = "^1.9.0"
+onnx-simplifier = "^0.3.6"
+pandas = "^1.1.4"
+seaborn = "^0.11.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
