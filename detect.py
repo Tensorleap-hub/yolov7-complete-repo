@@ -162,6 +162,16 @@ def detect(save_img=False):
 
     print(f'Done. ({time.time() - t0:.3f}s)')
 
+def load_input():
+    import tensorflow as tf
+    import torch.nn.functional as F
+    tf_model = tf.keras.models.load_model('yolov7-2.h5')
+    new_im = F.interpolate(img, (640, 640)).permute([0, 2, 3, 1]).cpu().numpy()
+    tf_res = tf.transpose(tf_model(new_im), [0, 2, 1])
+    torch.Tensor(tf_res.numpy())
+    pred = non_max_suppression(torch.Tensor(tf_res.numpy()), opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
+    import numpy as np
+    img = np.transpose(new_im, [0,3,1,2])
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
