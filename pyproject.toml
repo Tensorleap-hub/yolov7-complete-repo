@@ -22,6 +22,7 @@ onnx-simplifier = "^0.3.6"
 pandas = "^1.1.4"
 seaborn = "^0.11.0"
 tensorflow = "2.12"
+code-loader = "^1.0.18"
 
 
 [build-system]

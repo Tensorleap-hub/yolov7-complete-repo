@@ -1,0 +1,16 @@
+IMGSZ: 640
+IMGSZ_TEST: 640
+GS: 32
+SINGLE_CLS: false
+CACHE_IMAGES: false
+RECT: false
+WORKERS: 0
+QUAD: false
+MAX_INSTANCE: 20
+HYP: 'data/hyp.scratch.custom.yaml'
+DATA: 'data/coco14.yaml'
+#create_dataloader(CONFIG['train_path'], CONFIG['imgsz'], CONFIG['batch_size'], CONFIG['gs'],
+#                                            Namespace(single_cls=CONFIG['single_cls']),
+#                                            hyp=hyp, augment=True, cache=CONFIG['cache_images'], rect=CONFIG['rect'],
+#                                            rank=CONFIG['rank'], world_size=CONFIG['world_size'], workers=CONFIG['workers'],
+#                                            image_weights=CONFIG['image_weights'], quad=CONFIG['quad'], prefix='train: ')
