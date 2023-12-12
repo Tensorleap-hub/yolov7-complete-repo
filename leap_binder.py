@@ -18,10 +18,12 @@ import yaml
 from leap_utils import bb_array_to_object
 from code_loader.contract.visualizer_classes import LeapImageWithBBox
 from utils.general import non_max_suppression
-
+import os
 
 nc = 1 if CONFIG['SINGLE_CLS'] else int(data_dict['nc'])  # number of classes
-torch_model = Model(CONFIG['CFG'], ch=3, nc=nc, anchors=hyp.get('anchors'))
+print(3)
+root = os.path.abspath(os.path.dirname(__file__))
+torch_model = Model(os.path.join(root,CONFIG['CFG']), ch=3, nc=nc, anchors=hyp.get('anchors'))
 nl = torch_model.model[-1].nl
 hyp['box'] *= 3. / nl  # scale to layers
 hyp['cls'] *= nc / 80. * 3. / nl  # scale to classes and layers

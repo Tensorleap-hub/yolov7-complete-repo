@@ -1,16 +1,19 @@
-codeIntegrationId: 65670a7ca769c20019a8cd8b
-projectId: 65670a74a769c20019a8cd87
-entryFile: 'leap_binder.py'
+codeIntegrationId: 6578814989e0b70012ac5180
+projectId: 6578814289e0b70012ac517c
+secretId: ""
+entryFile: leap_binder.py
 include:
-  - cfg/*/*
-  - data/*
-  - deploy/*/*/*
-#  - figure/*
-#  - inference/*/*
-  - models/*
-  - scripts/*
-  - tools/*
-  - utils/*/*
-  - leap_binder.py
-  - leap_test.py
-  - leap_custom_test.py
+    - cfg/*/*
+    - data/*
+    - deploy/*/*/*
+    - models/*
+    - scripts/*
+    - tools/*
+    - utils/*.py
+    - utils/*/*
+    - models/*/*
+    - leap_binder.py
+    - leap_test.py
+    - leap_custom_test.py
+    - leap_utils.py
+    - leapcfg/*
