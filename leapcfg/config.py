@@ -15,3 +15,7 @@ def load_od_config() -> Dict[str, Any]:
     return config
 
 CONFIG = load_od_config()
+with open(CONFIG['HYP']) as f:
+    hyp = yaml.load(f, Loader=yaml.SafeLoader)  # load hyps
+with open(CONFIG['DATA']) as f:
+    data_dict = yaml.load(f, Loader=yaml.SafeLoader)

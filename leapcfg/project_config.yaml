@@ -6,9 +6,14 @@ CACHE_IMAGES: false
 RECT: false
 WORKERS: 0
 QUAD: false
-MAX_INSTANCE: 20
+MAX_INSTANCE: 50
+LABEL_SMOOTHING: 0.0
 HYP: 'data/hyp.scratch.custom.yaml'
 DATA: 'data/coco14.yaml'
+CFG: 'cfg/deploy/yolov7.yaml'
+NMS:
+  IOU_THRESH: 0.6
+  CONF_THRESH: 0.3
 #create_dataloader(CONFIG['train_path'], CONFIG['imgsz'], CONFIG['batch_size'], CONFIG['gs'],
 #                                            Namespace(single_cls=CONFIG['single_cls']),
 #                                            hyp=hyp, augment=True, cache=CONFIG['cache_images'], rect=CONFIG['rect'],
