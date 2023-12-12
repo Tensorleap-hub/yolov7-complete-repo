@@ -4,10 +4,10 @@ import yaml
 
 home_dir = os.getenv("HOME")
 persistent_dir = os.path.join(home_dir, "Tensorleap", 'ALBERTqa')
+root = os.path.abspath(os.path.dirname(__file__))
 
 def load_od_config() -> Dict[str, Any]:
     # Load the existing YAML config
-    root = os.path.abspath(os.path.dirname(__file__))
     file_path = os.path.join(root, 'project_config.yaml')
     with open(file_path, 'r') as file:
         config = yaml.safe_load(file)
@@ -15,7 +15,8 @@ def load_od_config() -> Dict[str, Any]:
     return config
 
 CONFIG = load_od_config()
-with open(CONFIG['HYP']) as f:
+with open(os.path.join(os.path.dirname(root),CONFIG['HYP'])) as f:
     hyp = yaml.load(f, Loader=yaml.SafeLoader)  # load hyps
-with open(CONFIG['DATA']) as f:
+print(CONFIG)
+with open(os.path.join(os.path.dirname(root),CONFIG['DATA'])) as f:
     data_dict = yaml.load(f, Loader=yaml.SafeLoader)
