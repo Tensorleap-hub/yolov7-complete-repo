@@ -1,3 +1,4 @@
 yolov7-2.h5 filter=lfs diff=lfs merge=lfs -text
 labels.tar.gz filter=lfs diff=lfs merge=lfs -text
 yolov7.pt filter=lfs diff=lfs merge=lfs -text
+yolov7.onnx filter=lfs diff=lfs merge=lfs -text

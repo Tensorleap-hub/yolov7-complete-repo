@@ -55,7 +55,6 @@ val2017.zip
 # Neural Network weights -----------------------------------------------------------------------------------------------
 *.weights
 *.pb
-*.onnx
 *.engine
 *.mlmodel
 *.torchscript
