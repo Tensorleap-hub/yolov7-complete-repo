@@ -4,7 +4,7 @@ import numpy as np
 
 # Tensorleap imports
 from code_loader import leap_binder
-from code_loader.contract.datasetclasses import PreprocessResponse 
+from code_loader.contract.datasetclasses import PreprocessResponse
 from code_loader.contract.enums import LeapDataType
 from code_loader.contract.visualizer_classes import LeapHorizontalBar
 from utils.datasets import create_dataloader
@@ -48,28 +48,28 @@ def preprocess_func() -> List[PreprocessResponse]:
     test_path = data_dict['val']
     train_dataloader, dataset = create_dataloader(train_path, CONFIG['IMGSZ'], 1, CONFIG['GS'],
                                             Namespace(single_cls=CONFIG['SINGLE_CLS']),
-                                            hyp=hyp, augment=False, cache=CONFIG['CACHE_IMAGES'], rect=CONFIG['RECT'],
+                                            hyp=hyp, augment=False, cache=CONFIG['CACHE_IMAGES'], rect=False,
                                             rank=-1, world_size=1, workers=CONFIG['WORKERS'],
                                             image_weights=False, quad=CONFIG['QUAD'], prefix='train: ')
     test_dataloader, dataset = create_dataloader(test_path, CONFIG['IMGSZ_TEST'], 1, CONFIG['GS'],\
                                                  Namespace(single_cls=CONFIG['SINGLE_CLS']),  # testloader
-                                                hyp=hyp, cache=CONFIG['CACHE_IMAGES'], rect=True, rank=-1,
+                                                hyp=hyp, augment=False, cache=CONFIG['CACHE_IMAGES'], rect=False, rank=-1,
                                                 world_size=1, workers=CONFIG['WORKERS'],
-                                                pad=0.5, prefix='val: ')
+                                                prefix='val: ')
 
     # Generate a PreprocessResponse for each data slice, to later be read by the encoders.
     # The length of each data slice is provided, along with the data dictionary.
     # In this example we pass `images` and `labels` that later are encoded into the inputs and outputs
-    train = PreprocessResponse(length=len(train_dataloader), data={'dataset': train_dataloader.dataset})
-    val = PreprocessResponse(length=len(test_dataloader), data={'dataset': test_dataloader.dataset})
+    train = PreprocessResponse(length=20, data={'dataset1': train_dataloader.dataset})
+    val = PreprocessResponse(length=20, data={'dataset1': test_dataloader.dataset})
     response = [train, val]
     return response
 
 
 # Input encoder fetches the image with the index `idx` from the `images` array set in
-# the PreprocessResponse data. Returns a numpy array containing the sample's image. 
+# the PreprocessResponse data. Returns a numpy array containing the sample's image.
 def input_encoder(idx: int, preprocess: PreprocessResponse) -> np.ndarray:
-    return preprocess.data['dataset'][idx][0].permute((1, 2, 0)).numpy().astype('float32')/255.
+    return preprocess.data['dataset1'][idx][0].permute((1, 2, 0)).numpy().astype('float32')/255.
 
 
 # Ground truth encoder fetches the label with the index `idx` from the `labels` array set in
@@ -77,7 +77,7 @@ def input_encoder(idx: int, preprocess: PreprocessResponse) -> np.ndarray:
 def gt_encoder(idx: int, preprocess: PreprocessResponse) -> np.ndarray:
     #TODO - problem - can't have dynamic GT shape?
     #Remove none-zero gt before picking up
-    torch_gt = preprocess.data['dataset'][idx][1]
+    torch_gt = preprocess.data['dataset1'][idx][1]
     np_gt = np.zeros((CONFIG['MAX_INSTANCE'], 6))
     np_gt[:, 1] = nc + 1
     instances_count = torch_gt.shape[0]
@@ -112,6 +112,8 @@ def transform_conf(pred):
 
 
 def custom_loss(pred, gt, imgs):
+    gt = gt.numpy()
+    imgs = imgs.numpy()
     for i in range(gt.shape[0]):
         gt[i, ..., 0] = i
     torch_gt = torch.from_numpy(gt[gt[..., 1] != nc+1, :])
@@ -130,7 +132,7 @@ def custom_loss(pred, gt, imgs):
 
 
 def pred_visualizer(pred, img):
-    out = non_max_suppression(torch.from_numpy(pred[None, ...].numpy()),
+    out = non_max_suppression(torch.from_numpy(pred[None, ...]),
                               conf_thres=CONFIG['NMS']['CONF_THRESH'],
                               iou_thres=CONFIG['NMS']['IOU_THRESH'], multi_label=True)[0].numpy()
     out[:, :4] = out[:, :4] / CONFIG['IMGSZ']
@@ -157,6 +159,7 @@ def metadata_label(idx: int, preprocess: PreprocessResponse) -> int:
 leap_binder.set_preprocess(function=preprocess_func)
 leap_binder.set_input(function=input_encoder, name='image')
 leap_binder.set_ground_truth(function=gt_encoder, name='classes')
+leap_binder.set_ground_truth(function=input_encoder, name='images_gt')
 leap_binder.add_prediction(name='classes', labels=['X', 'Y', 'W', ' H', ' Conf'] + data_dict['names'])
 leap_binder.set_visualizer(gt_visualizer, 'bb_gt_decoder', LeapDataType.ImageWithBBox)
 leap_binder.set_visualizer(pred_visualizer, 'bb_decoder', LeapDataType.ImageWithBBox)
