@@ -7,22 +7,14 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.8, <3.10"
-numpy = "^1.18.5"
-opencv-python = "^4.1.1"
-pillow = "^7.1.2"
-pyyaml = "^5.3.1"
-requests = "^2.23.0"
-scipy = "^1.4.1"
+code-loader = "^1.0.86"
+nump = "^5.5.5.5"
+tensorflow = "2.13.0"
+tensorflow-macos = "2.13.0"
+code-loader-helpers = "^1.0.20"
 torch = "^1.13"
 torchvision = "^0.14"
-tqdm = "^4.41.0"
-protobuf = "^3.20.3"
-onnx = "1.13.1"
-onnx-simplifier = "^0.3.6"
-pandas = "^1.1.4"
-seaborn = "^0.11.0"
-tensorflow = "2.12"
-code-loader = "^1.0.18"
+
 
 
 [build-system]
