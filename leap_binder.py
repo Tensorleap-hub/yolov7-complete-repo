@@ -7,6 +7,9 @@ from code_loader import leap_binder
 from code_loader.contract.datasetclasses import PreprocessResponse
 from code_loader.contract.enums import LeapDataType
 from code_loader.contract.visualizer_classes import LeapHorizontalBar
+from code_loader.inner_leap_binder.leapbinder_decorators import tensorleap_preprocess, tensorleap_input_encoder, \
+    tensorleap_gt_encoder, tensorleap_custom_visualizer, tensorleap_custom_loss
+
 from utils.datasets import create_dataloader
 from leapcfg.config import CONFIG, hyp, data_dict
 import torch
@@ -40,7 +43,7 @@ class Namespace:
         self.__dict__.update(kwargs)
 # Preprocess Function
 
-
+@tensorleap_preprocess()
 def preprocess_func() -> List[PreprocessResponse]:
     # Hyperparameters
 
@@ -67,13 +70,15 @@ def preprocess_func() -> List[PreprocessResponse]:
 
 
 # Input encoder fetches the image with the index `idx` from the `images` array set in
-# the PreprocessResponse data. Returns a numpy array containing the sample's image.
+# the PreprocessResponse data. Returns a numpy array containing the sample's image
+@tensorleap_input_encoder('image')
 def input_encoder(idx: int, preprocess: PreprocessResponse) -> np.ndarray:
     return preprocess.data['dataset1'][idx][0].permute((1, 2, 0)).numpy().astype('float32')/255.
 
 
 # Ground truth encoder fetches the label with the index `idx` from the `labels` array set in
 # the PreprocessResponse's data. Returns a numpy array containing a hot vector label correlated with the sample.
+@tensorleap_gt_encoder('classes')
 def gt_encoder(idx: int, preprocess: PreprocessResponse) -> np.ndarray:
     #TODO - problem - can't have dynamic GT shape?
     #Remove none-zero gt before picking up
@@ -82,7 +87,7 @@ def gt_encoder(idx: int, preprocess: PreprocessResponse) -> np.ndarray:
     np_gt[:, 1] = nc + 1
     instances_count = torch_gt.shape[0]
     np_gt[:instances_count, :] = torch_gt[:min(CONFIG['MAX_INSTANCE'], instances_count), :]
-    return np_gt
+    return np_gt.astype('float32')
 
 
 def arc_sigmoid(pred):
@@ -111,9 +116,22 @@ def transform_conf(pred):
     return pred
 
 
+def to_numpy(x):
+    if isinstance(x, np.ndarray):
+        return x
+    elif 'torch' in str(type(x)):
+        return x.detach().cpu().numpy()
+    elif 'tensorflow' in str(type(x)):
+        return x.numpy()
+    else:
+        return np.array(x)
+
+@tensorleap_custom_loss('od_loss')
 def custom_loss(pred, gt, imgs):
-    gt = gt.numpy()
-    imgs = imgs.numpy()
+    pred = to_numpy(pred)
+    gt = to_numpy(gt)
+    imgs = to_numpy(imgs)
+    # pred = np.transpose(pred, (0, 2, 1))
     for i in range(gt.shape[0]):
         gt[i, ..., 0] = i
     torch_gt = torch.from_numpy(gt[gt[..., 1] != nc+1, :])
@@ -122,7 +140,9 @@ def custom_loss(pred, gt, imgs):
     anchor_num = anchor_grid.shape[2]
     anchor_sizes = (CONFIG['IMGSZ']/strides).astype(int)
     bbox_indices = np.cumsum([0, *[int(anchor_num*(anchor_sizes[i]**2)) for i in range(len(strides))]])
-    pt_pred = torch.from_numpy(pred.numpy())
+    pt_pred = torch.from_numpy(pred)
+    # for i in range(anchor_grid.shape[0]):
+    #     print(f'for i: {i}, shape: {(pt_pred[:, bbox_indices[i]:bbox_indices[i + 1], :]).shape}')
     results = [torch.reshape(pt_pred[:,bbox_indices[i]:bbox_indices[i+1],:],
                                            (-1, anchor_num, anchor_sizes[i], anchor_sizes[i], nc+5))
                for i in range(anchor_grid.shape[0])]
@@ -130,8 +150,11 @@ def custom_loss(pred, gt, imgs):
     res = compute_loss_ota(results, torch_gt, torch.from_numpy(imgs).permute((0, 3, 1, 2)))
     return res[0].numpy()
 
-
+@tensorleap_custom_visualizer('bb_decoder', LeapDataType.ImageWithBBox)
 def pred_visualizer(pred, img):
+    # pred = np.transpose(pred, (0,2,1))
+    pred = pred[0, ...]
+    img = img[0, ...]
     out = non_max_suppression(torch.from_numpy(pred[None, ...]),
                               conf_thres=CONFIG['NMS']['CONF_THRESH'],
                               iou_thres=CONFIG['NMS']['IOU_THRESH'], multi_label=True)[0].numpy()
@@ -139,8 +162,10 @@ def pred_visualizer(pred, img):
     res = bb_array_to_object(out, iscornercoded=True, bg_label=nc+1, is_gt=False)
     return LeapImageWithBBox((img * 255).astype(np.uint8), res)
 
-
+@tensorleap_custom_visualizer('bb_gt_decoder', LeapDataType.ImageWithBBox)
 def gt_visualizer(gt, img):
+    gt = gt[0, ...]
+    img = img[0, ...]
     gt_permuted = np.concatenate([gt[:, 2:], gt[:, :2]], axis=-1)
     res = bb_array_to_object(gt_permuted, iscornercoded=False, bg_label=nc+1, is_gt=True)
     return LeapImageWithBBox((img * 255).astype(np.uint8), res)
@@ -156,11 +181,4 @@ def metadata_label(idx: int, preprocess: PreprocessResponse) -> int:
 
 
 # Dataset binding functions to bind the functions above to the `Dataset Instance`.
-leap_binder.set_preprocess(function=preprocess_func)
-leap_binder.set_input(function=input_encoder, name='image')
-leap_binder.set_ground_truth(function=gt_encoder, name='classes')
-leap_binder.set_ground_truth(function=input_encoder, name='images_gt')
 leap_binder.add_prediction(name='classes', labels=['X', 'Y', 'W', ' H', ' Conf'] + data_dict['names'])
-leap_binder.set_visualizer(gt_visualizer, 'bb_gt_decoder', LeapDataType.ImageWithBBox)
-leap_binder.set_visualizer(pred_visualizer, 'bb_decoder', LeapDataType.ImageWithBBox)
-leap_binder.add_custom_loss(custom_loss, 'od_loss')
