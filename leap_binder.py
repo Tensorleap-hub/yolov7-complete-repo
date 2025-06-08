@@ -131,7 +131,7 @@ def custom_loss(pred, gt, imgs):
     pred = to_numpy(pred)
     gt = to_numpy(gt)
     imgs = to_numpy(imgs)
-    # pred = np.transpose(pred, (0, 2, 1))
+    pred = np.transpose(pred, (0, 2, 1))
     for i in range(gt.shape[0]):
         gt[i, ..., 0] = i
     torch_gt = torch.from_numpy(gt[gt[..., 1] != nc+1, :])
@@ -152,7 +152,7 @@ def custom_loss(pred, gt, imgs):
 
 @tensorleap_custom_visualizer('bb_decoder', LeapDataType.ImageWithBBox)
 def pred_visualizer(pred, img):
-    # pred = np.transpose(pred, (0,2,1))
+    pred = np.transpose(pred, (0,2,1))
     pred = pred[0, ...]
     img = img[0, ...]
     out = non_max_suppression(torch.from_numpy(pred[None, ...]),
