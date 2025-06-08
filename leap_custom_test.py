@@ -9,7 +9,7 @@ import onnxruntime as rt
 
 def check_integration():
     check_generic = True
-    plot_vis = False
+    plot_vis = True
     if check_generic:
         leap_binder.check()
     print("started custom tests")
@@ -24,24 +24,26 @@ def check_integration():
     for set in res:
         for i in range(set.length):
             # get input and gt
-            inpt = input_encoder(i, set)[None, ...]
+            input = input_encoder(i, set)[None, ...]
             gt = gt_encoder(i, set)[None, ...]
 
             # infer model
-            pred = model(inpt)
+            pred = model(input)
             # pred = sess.run([label_name], {input_name: np.moveaxis(inpt.astype(np.float32), [1, 2, 3], [2, 3, 1])})[0]
 
             # add batch
             batch_pred = tf.concat([pred, pred], axis=0)
             batch_gt = np.concatenate([gt, gt], axis=0)
-            imgs = np.concatenate([inpt, inpt], axis=0)
+            imgs = np.concatenate([input, input], axis=0)
 
             # metrics
             loss = custom_loss(batch_pred.numpy(), batch_gt, imgs)
+            loss = custom_loss(pred.numpy(), gt, input)
+
 
             #vis
-            img_with_bbox = pred_visualizer(pred.numpy(), inpt)
-            gt_img_with_bbox = gt_visualizer(gt, inpt)
+            img_with_bbox = pred_visualizer(pred.numpy(), input)
+            gt_img_with_bbox = gt_visualizer(gt, input)
 
             if plot_vis:
                 visualize(img_with_bbox)
