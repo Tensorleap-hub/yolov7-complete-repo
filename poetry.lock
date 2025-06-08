@@ -945,20 +945,6 @@ extra = ["lxml (>=4.6)", "pydot (>=1.4.2)", "pygraphviz (>=1.10)", "sympy (>=1.1
 test = ["codecov (>=2.1)", "pytest (>=7.2)", "pytest-cov (>=4.0)"]
 
 [[package]]
-name = "nump"
-version = "5.5.5.5"
-description = "A typo-squatting pypi package demonstration"
-optional = false
-python-versions = "*"
-files = [
-    {file = "nump-5.5.5.5-py3-none-any.whl", hash = "sha256:c11380432c5fcfb4c78ca6cfcee452083cb0a97e2d6edbd92caa5058a2f4a576"},
-    {file = "nump-5.5.5.5.tar.gz", hash = "sha256:13585da36ad85c93fbbf21a1685b617097d6f2eb67046406085cfea7fbc96fa3"},
-]
-
-[package.dependencies]
-numpy = "*"
-
-[[package]]
 name = "numpy"
 version = "1.24.3"
 description = "Fundamental package for array computing in Python"
@@ -2031,4 +2017,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8, <3.10"
-content-hash = "deb83599671619768aab28edb58eb3e3a5efcb3fe56c59abf05efcf8f46bb633"
+content-hash = "728a487d4a70640f3642afdbf397b7f5a052cb3cbe6dc7665f9c8d1362bcdd60"
