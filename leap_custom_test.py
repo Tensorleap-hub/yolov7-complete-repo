@@ -1,4 +1,5 @@
-from leap_binder import preprocess_func, input_encoder, gt_encoder, custom_loss, pred_visualizer, gt_visualizer
+from leap_binder import preprocess_func, input_encoder, gt_encoder, custom_loss, pred_visualizer, gt_visualizer, \
+    images_gt_encoder
 import tensorflow as tf
 import numpy as np
 import matplotlib
@@ -9,7 +10,7 @@ import onnxruntime as rt
 
 def check_integration():
     check_generic = True
-    plot_vis = True
+    plot_vis = False
     if check_generic:
         leap_binder.check()
     print("started custom tests")
@@ -26,6 +27,7 @@ def check_integration():
             # get input and gt
             input = input_encoder(i, set)[None, ...]
             gt = gt_encoder(i, set)[None, ...]
+            images_gt = images_gt_encoder(i, set)[None, ...]
 
             # infer model
             pred = model(input)
@@ -34,11 +36,10 @@ def check_integration():
             # add batch
             batch_pred = tf.concat([pred, pred], axis=0)
             batch_gt = np.concatenate([gt, gt], axis=0)
-            imgs = np.concatenate([input, input], axis=0)
+            imgs = np.concatenate([images_gt, images_gt], axis=0)
 
             # metrics
             loss = custom_loss(batch_pred.numpy(), batch_gt, imgs)
-            loss = custom_loss(pred.numpy(), gt, input)
 
 
             #vis

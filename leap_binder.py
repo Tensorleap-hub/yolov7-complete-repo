@@ -89,6 +89,10 @@ def gt_encoder(idx: int, preprocess: PreprocessResponse) -> np.ndarray:
     np_gt[:instances_count, :] = torch_gt[:min(CONFIG['MAX_INSTANCE'], instances_count), :]
     return np_gt.astype('float32')
 
+@tensorleap_gt_encoder('images_gt')
+def images_gt_encoder(idx: int, preprocess: PreprocessResponse) -> np.ndarray:
+    return input_encoder(idx, preprocess)
+
 
 def arc_sigmoid(pred):
     return torch.log(pred / (1 - pred))
